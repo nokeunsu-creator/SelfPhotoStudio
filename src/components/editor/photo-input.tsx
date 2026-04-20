@@ -7,9 +7,8 @@ import { loadImage, resizeImage } from "@/lib/canvas/image-utils";
 import { segmentPerson } from "@/lib/ml/segmentation";
 import { detectFace } from "@/lib/ml/face-detection";
 import { replaceBackground } from "@/lib/canvas/background-replace";
-import { BACKGROUND_COLORS } from "@/constants/photo-specs";
+import { BACKGROUND_COLORS, PHOTO_SPECS } from "@/constants/photo-specs";
 import { calculateCropRect } from "@/lib/face-position";
-import { PHOTO_SPECS } from "@/constants/photo-specs";
 
 const MAX_IMAGE_SIZE = 2048;
 
@@ -20,17 +19,29 @@ export function PhotoInput() {
   async function handleFile(file: File) {
     if (!file.type.startsWith("image/")) return;
 
-    dispatch({ type: "SET_PROCESSING", isProcessing: true });
-
-    let workingCanvas: HTMLCanvasElement | null = null;
-
+    let img: HTMLImageElement;
     try {
-      const img = await loadImage(file);
-      dispatch({ type: "SET_ORIGINAL_IMAGE", image: img });
+      img = await loadImage(file);
+    } catch {
+      alert("사진을 불러올 수 없습니다.");
+      return;
+    }
 
-      workingCanvas = resizeImage(img, MAX_IMAGE_SIZE);
+    const workingCanvas = resizeImage(img, MAX_IMAGE_SIZE);
+    const ctx = workingCanvas.getContext("2d")!;
 
-      // Run segmentation and face detection in parallel
+    // 1단계: 원본 사진 즉시 표시
+    const originalData = ctx.getImageData(0, 0, workingCanvas.width, workingCanvas.height);
+    const defaultCrop = calculateCropRect(workingCanvas.width, workingCanvas.height, null, PHOTO_SPECS.passport);
+
+    dispatch({ type: "SET_ORIGINAL_IMAGE", image: img });
+    dispatch({ type: "SET_PROCESSED_IMAGE", imageData: originalData });
+    dispatch({ type: "SET_CROP_RECT", rect: defaultCrop });
+    dispatch({ type: "SET_STEP", step: "edit" });
+
+    // 2단계: AI 배경 제거 백그라운드 처리
+    dispatch({ type: "SET_PROCESSING", isProcessing: true });
+    try {
       const [segResult, faceResult] = await Promise.all([
         segmentPerson(workingCanvas),
         detectFace(workingCanvas),
@@ -53,21 +64,9 @@ export function PhotoInput() {
         PHOTO_SPECS.passport
       );
       dispatch({ type: "SET_CROP_RECT", rect: cropRect });
-      dispatch({ type: "SET_STEP", step: "edit" });
     } catch (error) {
-      console.error("Processing failed:", error);
-      // AI 처리 실패 시 원본 이미지로 폴백
-      if (workingCanvas) {
-        const ctx = workingCanvas.getContext("2d")!;
-        const fallback = ctx.getImageData(0, 0, workingCanvas.width, workingCanvas.height);
-        dispatch({ type: "SET_PROCESSED_IMAGE", imageData: fallback });
-        const cropRect = calculateCropRect(workingCanvas.width, workingCanvas.height, null, PHOTO_SPECS.passport);
-        dispatch({ type: "SET_CROP_RECT", rect: cropRect });
-        dispatch({ type: "SET_STEP", step: "edit" });
-      } else {
-        alert("사진을 불러올 수 없습니다. 다른 사진으로 시도해주세요.");
-        dispatch({ type: "RESET" });
-      }
+      console.error("AI processing failed:", error);
+      // 실패해도 원본 이미지가 이미 표시돼 있으므로 별도 처리 불필요
     } finally {
       dispatch({ type: "SET_PROCESSING", isProcessing: false });
     }
