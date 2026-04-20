@@ -12,16 +12,23 @@ async function getSegmenter(): Promise<ImageSegmenter> {
     "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
   );
 
-  segmenter = await ImageSegmenter.createFromOptions(vision, {
-    baseOptions: {
-      modelAssetPath:
-        "https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite",
-      delegate: "GPU",
-    },
-    runningMode: "IMAGE",
-    outputCategoryMask: false,
-    outputConfidenceMasks: true,
-  });
+  const modelPath =
+    "https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite";
+  try {
+    segmenter = await ImageSegmenter.createFromOptions(vision, {
+      baseOptions: { modelAssetPath: modelPath, delegate: "GPU" },
+      runningMode: "IMAGE",
+      outputCategoryMask: false,
+      outputConfidenceMasks: true,
+    });
+  } catch {
+    segmenter = await ImageSegmenter.createFromOptions(vision, {
+      baseOptions: { modelAssetPath: modelPath, delegate: "CPU" },
+      runningMode: "IMAGE",
+      outputCategoryMask: false,
+      outputConfidenceMasks: true,
+    });
+  }
 
   return segmenter;
 }

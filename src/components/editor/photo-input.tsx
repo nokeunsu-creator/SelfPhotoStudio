@@ -22,12 +22,13 @@ export function PhotoInput() {
 
     dispatch({ type: "SET_PROCESSING", isProcessing: true });
 
+    let workingCanvas: HTMLCanvasElement | null = null;
+
     try {
       const img = await loadImage(file);
       dispatch({ type: "SET_ORIGINAL_IMAGE", image: img });
 
-      // Resize for processing
-      const workingCanvas = resizeImage(img, MAX_IMAGE_SIZE);
+      workingCanvas = resizeImage(img, MAX_IMAGE_SIZE);
 
       // Run segmentation and face detection in parallel
       const [segResult, faceResult] = await Promise.all([
@@ -38,7 +39,6 @@ export function PhotoInput() {
       dispatch({ type: "SET_SEGMENTATION_MASK", mask: segResult.mask });
       dispatch({ type: "SET_FACE_BOUNDS", bounds: faceResult });
 
-      // Apply default background
       const processedImageData = replaceBackground(
         workingCanvas,
         segResult.mask,
@@ -46,7 +46,6 @@ export function PhotoInput() {
       );
       dispatch({ type: "SET_PROCESSED_IMAGE", imageData: processedImageData });
 
-      // Auto-calculate crop
       const cropRect = calculateCropRect(
         workingCanvas.width,
         workingCanvas.height,
@@ -57,7 +56,18 @@ export function PhotoInput() {
       dispatch({ type: "SET_STEP", step: "edit" });
     } catch (error) {
       console.error("Processing failed:", error);
-      alert("사진 처리에 실패했습니다. 다른 사진으로 시도해주세요.");
+      // AI 처리 실패 시 원본 이미지로 폴백
+      if (workingCanvas) {
+        const ctx = workingCanvas.getContext("2d")!;
+        const fallback = ctx.getImageData(0, 0, workingCanvas.width, workingCanvas.height);
+        dispatch({ type: "SET_PROCESSED_IMAGE", imageData: fallback });
+        const cropRect = calculateCropRect(workingCanvas.width, workingCanvas.height, null, PHOTO_SPECS.passport);
+        dispatch({ type: "SET_CROP_RECT", rect: cropRect });
+        dispatch({ type: "SET_STEP", step: "edit" });
+      } else {
+        alert("사진을 불러올 수 없습니다. 다른 사진으로 시도해주세요.");
+        dispatch({ type: "RESET" });
+      }
     } finally {
       dispatch({ type: "SET_PROCESSING", isProcessing: false });
     }

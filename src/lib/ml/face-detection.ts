@@ -10,14 +10,19 @@ async function getDetector(): Promise<FaceDetector> {
     "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
   );
 
-  detector = await FaceDetector.createFromOptions(vision, {
-    baseOptions: {
-      modelAssetPath:
-        "https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/latest/blaze_face_short_range.tflite",
-      delegate: "GPU",
-    },
-    runningMode: "IMAGE",
-  });
+  const modelPath =
+    "https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/latest/blaze_face_short_range.tflite";
+  try {
+    detector = await FaceDetector.createFromOptions(vision, {
+      baseOptions: { modelAssetPath: modelPath, delegate: "GPU" },
+      runningMode: "IMAGE",
+    });
+  } catch {
+    detector = await FaceDetector.createFromOptions(vision, {
+      baseOptions: { modelAssetPath: modelPath, delegate: "CPU" },
+      runningMode: "IMAGE",
+    });
+  }
 
   return detector;
 }

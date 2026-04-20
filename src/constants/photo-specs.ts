@@ -45,6 +45,15 @@ export const PHOTO_SPECS: Record<string, PhotoSpec> = {
     cmH: 4.5,
     dpi: 300,
   },
+  driverLicense: {
+    label: "운전면허증",
+    description: "운전면허증 갱신/발급",
+    width: 413,
+    height: 531,
+    cmW: 3.5,
+    cmH: 4.5,
+    dpi: 300,
+  },
 } as const;
 
 export const BACKGROUND_COLORS = {
