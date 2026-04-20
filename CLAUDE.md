@@ -1,5 +1,11 @@
 # 셀프증명 (Self Photo Studio) 프로젝트
 
+## 작업 규칙
+- 기능 추가/구조 변경/버그 수정 후 이 파일의 관련 섹션을 최신 상태로 업데이트할 것
+- **개발 완료 시 반드시 배포**: 기능 구현이 완료되면 항상 `npx vercel --prod --yes`로 즉시 배포할 것
+- 배포 명령어: `npx vercel --prod --yes`
+- GitHub push: `git push`
+
 ## 프로젝트 개요
 
 증명사진 편집 웹앱. 카메라/갤러리 사진 선택 → AI 배경 제거 → 배경색 변환 → 규격 크롭 → 다운로드. **모든 처리 클라이언트 사이드**, 서버 비용 0. SEO 트래픽("증명사진 앱") + 광고/워터마크 기반 수익화.
@@ -15,7 +21,8 @@
 | 배경 제거 | @mediapipe/tasks-vision — Image Segmenter |
 | 얼굴 인식 | @mediapipe/tasks-vision — Face Detector |
 | 상태관리 | useReducer + Context |
-| 배포 | Vercel (예정) |
+| 배포 | Vercel → https://selfphotostudio.vercel.app |
+| GitHub | https://github.com/nokeunsu-creator/SelfPhotoStudio |
 
 ## 프로젝트 구조
 
