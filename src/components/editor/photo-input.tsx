@@ -39,13 +39,16 @@ export function PhotoInput() {
     dispatch({ type: "SET_CROP_RECT", rect: defaultCrop });
     dispatch({ type: "SET_STEP", step: "edit" });
 
-    // 2단계: AI 배경 제거 백그라운드 처리
+    // 2단계: AI 배경 제거 백그라운드 처리 (30초 타임아웃)
     dispatch({ type: "SET_PROCESSING", isProcessing: true });
+    const timeout = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("timeout")), 30000)
+    );
     try {
-      const [segResult, faceResult] = await Promise.all([
-        segmentPerson(workingCanvas),
-        detectFace(workingCanvas),
-      ]);
+      const [segResult, faceResult] = await Promise.race([
+        Promise.all([segmentPerson(workingCanvas), detectFace(workingCanvas)]),
+        timeout,
+      ]) as Awaited<ReturnType<typeof Promise.all<[ReturnType<typeof segmentPerson>, ReturnType<typeof detectFace>]>>>;
 
       dispatch({ type: "SET_SEGMENTATION_MASK", mask: segResult.mask });
       dispatch({ type: "SET_FACE_BOUNDS", bounds: faceResult });

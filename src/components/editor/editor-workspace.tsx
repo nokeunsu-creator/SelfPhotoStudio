@@ -49,15 +49,11 @@ export function EditorWorkspace() {
         <PhotoInput />
       ) : (
         <>
-          {/* Processing overlay */}
+          {/* Processing banner */}
           {state.isProcessing && (
-            <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/80">
-              <div className="text-center">
-                <div className="mx-auto mb-3 h-10 w-10 animate-spin rounded-full border-4 border-blue-200 border-t-blue-600" />
-                <p className="text-sm font-medium text-gray-700">
-                  AI가 사진을 분석하고 있습니다...
-                </p>
-              </div>
+            <div className="flex items-center justify-center gap-2 bg-blue-50 px-4 py-2 text-sm text-blue-700">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-200 border-t-blue-600" />
+              AI 배경 제거 중...
             </div>
           )}
 
