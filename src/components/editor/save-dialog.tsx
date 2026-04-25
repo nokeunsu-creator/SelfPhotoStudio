@@ -31,8 +31,7 @@ export function SaveDialog({
   const [isSaving, setIsSaving] = useState(false);
 
   async function handleSave() {
-    if (!state.originalImage || !state.segmentationMask || !state.cropRect)
-      return;
+    if (!state.originalImage || !state.cropRect) return;
 
     setIsSaving(true);
     try {
@@ -41,17 +40,22 @@ export function SaveDialog({
 
       // Rebuild from original at full resolution for best quality
       const workingCanvas = resizeImage(state.originalImage, MAX_IMAGE_SIZE);
-      const processedImageData = replaceBackground(
-        workingCanvas,
-        state.segmentationMask,
-        bgColor
-      );
 
-      // Put processed data on canvas
-      const processedCanvas = document.createElement("canvas");
-      processedCanvas.width = processedImageData.width;
-      processedCanvas.height = processedImageData.height;
-      processedCanvas.getContext("2d")!.putImageData(processedImageData, 0, 0);
+      // 배경 제거 마스크가 있으면 배경 교체, 없으면 원본 그대로 사용
+      let processedCanvas: HTMLCanvasElement;
+      if (state.segmentationMask) {
+        const processedImageData = replaceBackground(
+          workingCanvas,
+          state.segmentationMask,
+          bgColor
+        );
+        processedCanvas = document.createElement("canvas");
+        processedCanvas.width = processedImageData.width;
+        processedCanvas.height = processedImageData.height;
+        processedCanvas.getContext("2d")!.putImageData(processedImageData, 0, 0);
+      } else {
+        processedCanvas = workingCanvas;
+      }
 
       // Crop to spec
       let finalCanvas = cropToSpec(processedCanvas, state.cropRect, spec);
@@ -145,6 +149,14 @@ export function SaveDialog({
               </button>
             </div>
           </div>
+
+          {!state.segmentationMask && (
+            <p className="text-xs text-amber-600">
+              {state.isProcessing
+                ? "AI 배경 제거가 진행 중입니다. 지금 저장하면 원본 배경 그대로 저장됩니다."
+                : "AI 배경 제거에 실패했습니다. 원본 배경 그대로 저장됩니다."}
+            </p>
+          )}
 
           {!state.watermarkRemoved && (
             <p className="text-xs text-amber-600">

@@ -41,6 +41,7 @@ export function PhotoInput() {
 
     // 2단계: AI 배경 제거 백그라운드 처리 (30초 타임아웃)
     dispatch({ type: "SET_PROCESSING", isProcessing: true });
+    dispatch({ type: "SET_AI_FAILED", failed: false });
     const timeout = new Promise<never>((_, reject) =>
       setTimeout(() => reject(new Error("timeout")), 30000)
     );
@@ -69,7 +70,8 @@ export function PhotoInput() {
       dispatch({ type: "SET_CROP_RECT", rect: cropRect });
     } catch (error) {
       console.error("AI processing failed:", error);
-      // 실패해도 원본 이미지가 이미 표시돼 있으므로 별도 처리 불필요
+      dispatch({ type: "SET_AI_FAILED", failed: true });
+      // 원본 이미지는 이미 표시돼 있으므로 사용자는 그대로 편집/저장 가능
     } finally {
       dispatch({ type: "SET_PROCESSING", isProcessing: false });
     }

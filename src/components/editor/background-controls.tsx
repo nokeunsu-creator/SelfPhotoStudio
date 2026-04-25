@@ -24,6 +24,8 @@ export function BackgroundControls() {
     dispatch({ type: "SET_PROCESSED_IMAGE", imageData: processedImageData });
   }
 
+  const disabled = !state.segmentationMask;
+
   return (
     <div className="flex items-center gap-2">
       <span className="text-sm font-medium text-gray-700">배경색</span>
@@ -32,15 +34,21 @@ export function BackgroundControls() {
           <button
             key={key}
             onClick={() => handleColorChange(key)}
+            disabled={disabled}
             className={`h-8 w-8 rounded-full border-2 transition-all ${
-              state.backgroundColor === key
+              state.backgroundColor === key && !disabled
                 ? "border-blue-600 ring-2 ring-blue-200"
                 : "border-gray-300"
-            }`}
+            } ${disabled ? "cursor-not-allowed opacity-40" : ""}`}
             style={{ backgroundColor: color.value }}
             title={color.label}
           />
         )
+      )}
+      {disabled && (
+        <span className="ml-1 text-[11px] text-gray-400">
+          {state.isProcessing ? "AI 처리 중..." : "AI 실패"}
+        </span>
       )}
     </div>
   );

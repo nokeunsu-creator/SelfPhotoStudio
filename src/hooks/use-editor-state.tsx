@@ -13,6 +13,7 @@ const initialState: EditorState = {
   backgroundColor: "white",
   cropRect: null,
   isProcessing: false,
+  aiFailed: false,
   watermarkRemoved: false,
 };
 
@@ -36,6 +37,8 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
       return { ...state, cropRect: action.rect };
     case "SET_PROCESSING":
       return { ...state, isProcessing: action.isProcessing };
+    case "SET_AI_FAILED":
+      return { ...state, aiFailed: action.failed };
     case "REMOVE_WATERMARK":
       return { ...state, watermarkRemoved: true };
     case "RESET":

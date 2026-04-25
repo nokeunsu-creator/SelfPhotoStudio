@@ -57,6 +57,14 @@ export function EditorWorkspace() {
             </div>
           )}
 
+          {/* AI failure banner */}
+          {!state.isProcessing && state.aiFailed && !state.segmentationMask && (
+            <div className="flex items-center justify-center gap-2 bg-amber-50 px-4 py-2 text-xs text-amber-800">
+              <span>⚠️</span>
+              AI 배경 제거 실패 — 원본 사진 그대로 크롭/저장할 수 있습니다.
+            </div>
+          )}
+
           {/* Canvas */}
           <CanvasPreview />
 

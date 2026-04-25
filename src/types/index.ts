@@ -26,6 +26,7 @@ export interface EditorState {
   backgroundColor: BackgroundColorKey;
   cropRect: CropRect | null;
   isProcessing: boolean;
+  aiFailed: boolean;
   watermarkRemoved: boolean;
 }
 
@@ -39,5 +40,6 @@ export type EditorAction =
   | { type: "SET_BACKGROUND_COLOR"; color: BackgroundColorKey }
   | { type: "SET_CROP_RECT"; rect: CropRect }
   | { type: "SET_PROCESSING"; isProcessing: boolean }
+  | { type: "SET_AI_FAILED"; failed: boolean }
   | { type: "REMOVE_WATERMARK" }
   | { type: "RESET" };
